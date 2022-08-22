@@ -3,7 +3,7 @@
 #Links
 # Amazon Link Display https://www.amazon.com/dp/B094N26Q1L?psc=1&ref=ppx_yo2ov_dt_b_product_details
 # Amazon Link ESP32 https://www.amazon.com/dp/B08PNWB81Z?psc=1&ref=ppx_yo2ov_dt_b_product_details
-
+THIS WILL ONLY WORK ON AN WEMOS D1 MINI32
 
 Enter your own informaiton for your devices.
 
