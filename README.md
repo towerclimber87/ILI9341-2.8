@@ -3,20 +3,20 @@
 # Amazon Link Display https://www.amazon.com/dp/B094N26Q1L?psc=1&ref=ppx_yo2ov_dt_b_product_details
 # Amazon Link ESP32 https://www.amazon.com/dp/B08PNWB81Z?psc=1&ref=ppx_yo2ov_dt_b_product_details
 
-
-
-
-
 substitutions:
   $esp_name: "bedroom-temp-controller"
   $thermostat: "climate.bedroom_thermostat"
   $device_1: "cover.bedroom_blinds_1"  
   $device_1_name: "North"
+  $device_1_call_service_up: "cover.open_cover"  
+  $device_1_call_service_down: "cover.close_cover"    
   $device_2: "cover.bedroom_blinds_2"
+  $device_2_call_service_up: "cover.open_cover"  
+  $device_2_call_service_down: "cover.close_cover"     
   $device_2_name: "East"  
   $alarm_name: "alarm_control_panel.alarmo"
   $alarmcode: "!secret alarm_code"   
-  $media_player: "media_player.sonos"   
+  $media_player: "media_player.sonos"    
 
 ########### INCLUDE YOUR OWN WIFI INFORMAITON ################
 <<: !include include/bwifi.yaml
@@ -425,7 +425,7 @@ binary_sensor:
 
   - platform: xpt2046
     xpt2046_id: touchscreen
-    id: confort
+    id: sonospage
     x_min: 161
     x_max: 300
     y_min: 0
@@ -474,12 +474,15 @@ binary_sensor:
     on_press:    
       - if:
           condition:
-            - display.is_displaying_page:
-                id: tft_ha
-                page_id: page2
+            for:
+              time: 500ms
+              condition:     
+                - display.is_displaying_page:
+                    id: tft_ha
+                    page_id: page2
           then:   
             - homeassistant.service:
-                service: cover.open_cover
+                service: $device_1_call_service_up
                 data_template:
                     entity_id: $device_1  
           
@@ -494,12 +497,15 @@ binary_sensor:
     on_press:    
       - if:
           condition:
-            - display.is_displaying_page:
-                id: tft_ha
-                page_id: page2
+            for:
+              time: 500ms
+              condition:     
+                - display.is_displaying_page:
+                    id: tft_ha
+                    page_id: page2
           then:   
             - homeassistant.service:
-                service: cover.close_cover
+                service: $device_1_call_service_down
                 data_template:
                     entity_id: $device_1  
           
@@ -516,9 +522,12 @@ binary_sensor:
     on_press:    
       - if:
           condition:
-            - display.is_displaying_page:
-                id: tft_ha
-                page_id: page2
+            for:
+              time: 500ms
+              condition:     
+                - display.is_displaying_page:
+                    id: tft_ha
+                    page_id: page2
           then:   
             - homeassistant.service:
                 service: cover.set_cover_position
@@ -538,12 +547,15 @@ binary_sensor:
     on_press:    
       - if:
           condition:
-            - display.is_displaying_page:
-                id: tft_ha
-                page_id: page2
+            for:
+              time: 500ms
+              condition:     
+                - display.is_displaying_page:
+                    id: tft_ha
+                    page_id: page2
           then:   
             - homeassistant.service:
-                service: cover.open_cover
+                service: $device_2_call_service_up
                 data_template:
                     entity_id: $device_2    
           
@@ -557,12 +569,15 @@ binary_sensor:
     on_press:    
       - if:
           condition:
-            - display.is_displaying_page:
-                id: tft_ha
-                page_id: page2
+            for:
+              time: 500ms
+              condition:     
+                - display.is_displaying_page:
+                    id: tft_ha
+                    page_id: page2
           then:   
             - homeassistant.service:
-                service: cover.close_cover
+                service: $device_2_call_service_down
                 data_template:
                     entity_id: $device_2   
 
@@ -576,9 +591,12 @@ binary_sensor:
     on_press:    
       - if:
           condition:
-            - display.is_displaying_page:
-                id: tft_ha
-                page_id: page2
+            for:
+              time: 500ms
+              condition:     
+                - display.is_displaying_page:
+                    id: tft_ha
+                    page_id: page2
           then:   
             - homeassistant.service:
                 service: cover.set_cover_position
@@ -807,9 +825,12 @@ binary_sensor:
     on_press:    
       - if:
           condition:
-            - display.is_displaying_page:
-                id: tft_ha
-                page_id: page4
+            for:
+              time: 500ms
+              condition:     
+                - display.is_displaying_page:
+                    id: tft_ha
+                    page_id: page4
           then:   
           - display.page.show: page5    
           - delay: 30s
@@ -836,7 +857,7 @@ binary_sensor:
                 service: switch.toggle
                 data_template:
                     entity_id: switch.sonos_sub      
-            - delay: 4s                          
+            - delay: 8s                          
             - display.page.show: page4          
                     
   - platform: xpt2046
@@ -860,7 +881,7 @@ binary_sensor:
                 service: switch.toggle
                 data_template:
                     entity_id: switch.sonos_sonosf_surround_enabled 
-            - delay: 4s        
+            - delay: 8s        
             - display.page.show: page4
  
   - platform: xpt2046
@@ -884,7 +905,7 @@ binary_sensor:
                 service: switch.toggle
                 data_template:
                     entity_id: switch.livingroom_projector    
-            - delay: 4s                          
+            - delay: 8s                          
             - display.page.show: page4                    
                     
 text_sensor:
