@@ -35,3 +35,12 @@ substitutions:
   $sound_device_3_call_service: "switch.toggle"  
   $sound_device_3: "switch.livingroom_projector "   
   $sound_device_3_name: "Projector "     
+
+
+![Page 1](https://user-images.githubusercontent.com/23288746/185841792-6305a630-70eb-4cd7-b8f3-338195abdad5.JPG)
+![Page 2](https://user-images.githubusercontent.com/23288746/185841812-53952414-9894-4e98-819f-8541263fe14a.JPG)
+![Page 3](https://user-images.githubusercontent.com/23288746/185841833-52bda7e2-830a-454b-aded-5f6bb7c85cae.JPG)
+![Page 4](https://user-images.githubusercontent.com/23288746/185841881-3549b342-13cd-485c-8f23-b541200ebe17.JPG)
+![Page 5](https://user-images.githubusercontent.com/23288746/185841869-2df35801-fb35-4cf2-82bc-4d98607d19c1.JPG)
+
+
