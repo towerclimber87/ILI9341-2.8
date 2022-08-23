@@ -1,0 +1,1102 @@
+substitutions:
+  $esp_name: "livingroom-temp-controller"
+### PAGE 1 ###
+  $thermostat: "climate.livingroom_thermostat"
+### PAGE 3 ###
+  $alarm_name: "alarm_control_panel.alarmo"
+  $alarmcode: "4905"   
+### PAGE 2 ###
+  $device_1: "cover.west_blinds"  
+  $device_1_name: "West"
+  $device_1_call_service_up: "cover.open_cover"  
+  $device_1_call_service_down: "cover.close_cover"    
+  $device_2: "cover.north_blinds"
+  $device_2_call_service_up: "cover.open_cover"  
+  $device_2_call_service_down: "cover.close_cover"     
+  $device_2_name: "North"  
+### PAGE 4 ###
+  $helper_1_call_service: "input_boolean.toggle"
+  $helper_1: "input_boolean.kitchen_light_stay_on"
+  $helper_1_name: "Light Stay On"
+  
+  $helper_2_call_service: "input_boolean.toggle"
+  $helper_2: "input_boolean.kitchen_light_auto_off"
+  $helper_2_name: "Light Stay Off" 
+  
+  $helper_3_call_service: "input_boolean.toggle"
+  $helper_3: "input_boolean.morning_hold"
+  $helper_3_name: "Morning Hold"
+  
+  $helper_4_call_service: "input_boolean.toggle"
+  $helper_4: "input_boolean.sonos_sound_correction"
+  $helper_4_name: "Sonos Correction"  
+  
+  $helper_5_call_service: "input_boolean.toggle"
+  $helper_5: "input_boolean.house_wall_art"
+  $helper_5_name: "Wall Art"
+  
+  $helper_6_call_service: "input_boolean.toggle"
+  $helper_6: "input_boolean.hass_restart"
+  $helper_6_name: "Home Restart"
+  
+  $helper_7_call_service: "input_boolean.toggle"
+  $helper_7: "input_boolean.winter"
+  $helper_7_name: "Winter" 
+  
+  $helper_8_call_service: "input_boolean.toggle"
+  $helper_8: "input_boolean.summer"
+  $helper_8_name: "Summer"
+
+### MAIN PUSH ###  
+  $main_push_device: "input_boolean.good_night"  
+  $main_push_device_service: "input_boolean.turn_on"  
+
+
+########### INCLUDE YOUR OWN WIFI INFORMAITON ################
+<<: !include include/lwifi.yaml
+
+
+api:
+ password: !secret api_password
+
+ota:
+  safe_mode: false
+
+######### TURN OFF LOGGER IF NOT NEEDED #############################
+logger:
+######### TURN OFF LOGGER IF NOT NEEDED #############################
+
+
+esphome:
+  name: $esp_name
+  on_boot:
+    priority: -10
+    then:
+    - wait_until:
+        api.connected:
+    - display.page.show: page0         
+    - delay: 10s
+    -  if:
+        condition:
+          api.connected:
+        then:      
+               - display.page.show: page1  
+esp32:
+  board: wemos_d1_mini32
+  framework:
+    type: arduino
+spi:
+  clk_pin: D5
+  mosi_pin: D7
+  miso_pin: D6
+xpt2046:
+  id: touchscreen
+  cs_pin: D4
+  # threshold: 2000
+  dimension_x: 240
+  dimension_y: 320
+  swap_x_y: false
+  on_state:
+    - lambda: |-
+        if (touched)
+          ESP_LOGI("cal", "x=%d, y=%d, x_raw=%d, y_raw=%d",
+              id(touchscreen).x,
+              id(touchscreen).y,
+              id(touchscreen).x_raw,
+              id(touchscreen).y_raw
+              );
+font:
+  - file: "_fonts/refsan.ttf"
+    id: font2
+    size: 52
+  - file: "_fonts/refsan.ttf"
+    id: font4
+    size: 18
+  - file: "_fonts/refsan.ttf"
+    id: fonthellper
+    size: 13
+  - file: "_fonts/refsan.ttf"
+    id: font5
+    size: 15
+  - file: "_fonts/refsan.ttf"
+    id: touch 
+    size: 40    
+  - file: "_fonts/refsan.ttf"
+    id: touch_2
+    size: 30        
+  - file: "_fonts/refsan.ttf"
+    id: font6
+    size: 28
+  - file: "_fonts/refsan.ttf"
+    id: font7
+    size: 22
+  - file: 'MaterialDesign-Webfont/fonts/materialdesignicons-webfont.ttf' 
+    id: icon_font_new
+    size: 55
+    glyphs: [
+      '󰜷', # mdi-arrow up
+      '󰜮', # hdi-arrow Down
+      '󰁀', # hdi-ahalf      
+      '󰒬', # hdi-Skip   
+      '󰒫', # hdi-Skisadfsdf
+      '󰏤', # hdi-mute 
+      '󰟲', # hdi-projector   
+    ]
+    
+  - file: 'MaterialDesign-Webfont/fonts/materialdesignicons-webfont.ttf' 
+    id: icon_font_new_3
+    size: 55
+    glyphs: [
+      '󱄜', # hdi-cover
+      '󰖮', # mdi-window          
+    ]    
+    
+  - file: 'MaterialDesign-Webfont/fonts/materialdesignicons-webfont.ttf' 
+    id: icon_font_new_2
+    size: 35
+    glyphs: [
+      '󰈐', # mdi-confort
+      '󰜷', # mdi-arrow up
+      '󰖮', # mdi-window      
+      '󰞎', # mdi-alarm  
+      '󰜟', # mdi-speaker     
+      '󰏤', # hdi-mute 
+      '󰟲', # hdi-projector 
+      '󰓃', # hdi-sub
+      '󰗅', # hdi-surround  
+      '󰠜', # hdi-door      
+    ]    
+  - file: 'MaterialDesign-Webfont/fonts/materialdesignicons-webfont.ttf' 
+    id: icon_font_alarm
+    size: 150
+    glyphs: [
+      '󰞎', # mdi-alarm       
+    ]        
+display:
+  - platform: ili9341
+    model: TFT 2.4
+    cs_pin: D0
+    dc_pin: D8
+    led_pin: D1
+    reset_pin: D2
+    rotation: 0
+    id: tft_ha
+    update_interval: 250ms    
+    pages:
+      - id: page0
+        lambda: |-         
+             it.print(65, 80, id(font2), id(my_red), "OFF");    
+             it.print(60, 130, id(font2), id(my_red), "LINE");  
+      - id: page1    
+        lambda: |-    
+             it.print(0, 296, id(font5), id(my_green), "MODE");  
+             it.print(187, 296, id(font5), id(my_yellow), "Helpers");    
+             it.print(185, 0, id(font5), id(my_green), "BLINDS");   
+             it.print(57, 170, id(font6), id(my_green), "Set Point");         
+             it.print(48, 60, id(font6), id(my_green), "Room Temp");          
+             it.printf(175, 155, id(font5), " %s",id(mysensor10).state.c_str());
+             it.print(184, 142, id(font5), id(my_green), "State");              
+             it.printf(30, 80, id(font2), " %.1f°",id(mysensor1).state);   
+             it.printf(30, 190, id(font2), " %.1f°",id(target_temp_2).state);              
+             it.print(100, 270, id(icon_font_new), id(my_blue), "󰜮");   
+             it.print(100, 0, id(icon_font_new), id(my_red), "󰜷");  
+             it.print(0, 0, id(font5), id(my_green), "ALARM");   
+             it.printf(0, 155, id(font5), " %s",id(mysensor11).state.c_str());      
+             it.print(3, 142, id(font5), id(my_green), "Mode");   
+             if (id(doorsclosed).state) {
+               it.print(60, 0, id(icon_font_new_2), id(my_yellow), "󰠜");
+               } else {
+               it.print(50, 0, id(icon_font_new_2), id(my_green), "");
+             }  
+             if (id(alarmon).state) {
+               it.print(0, 30, id(font7), id(my_red), "Alarm On");
+               } else {
+               it.print(100, 0, id(icon_font_new_2), id(my_green), "");
+             }               
+      - id: page2
+        lambda: |-    
+             it.print(80, 0, id(font6), "$device_1_name");         
+             it.print(111, 30, id(icon_font_new), "󰜷");  
+             it.print(160, 47, id(font7), "Open");              
+             it.print(76, 30, id(icon_font_new_3), "󱄜");                
+             it.print(111, 110, id(icon_font_new), "󰜮");  
+             it.print(160, 125, id(font7), "Close");                       
+             it.print(76, 110, id(icon_font_new_3), "󱄜");                   
+             it.print(80, 165, id(font6), "$device_2_name");    
+             it.print(111, 190, id(icon_font_new), "󰜷");    
+             it.print(160, 207, id(font7), "Open");               
+             it.print(76, 190, id(icon_font_new_3), "󱄜");     
+             it.print(111, 270, id(icon_font_new), "󰜮");    
+             it.print(160, 285, id(font7), "Close");                
+             it.print(76, 270, id(icon_font_new_3), "󱄜");       
+             it.print(0, 70, id(icon_font_new), "󰁀");    
+             it.print(0, 230, id(icon_font_new), "󰁀");                    
+      - id: page3
+        lambda: |-    
+             if (id(alarmon).state) {
+               it.print(70, 0, id(font7), id(my_red), "Alarm On");
+               } else {
+               it.print(70, 0, id(font7), id(my_green), "Alarm Off");
+             }         
+             it.print(18, 40, id(font2), id(my_red), "DISARM"); 
+             it.print(0, 210, id(font4), id(my_red), "ARM ALARM");   
+             it.print(30, 230, id(font4), id(my_red), "HOME");                
+             it.print(125, 210, id(font4), id(my_red), "ARM ALARM");    
+             it.print(155, 230, id(font4), id(my_red), "AWAY");       
+      - id: page4
+        lambda: |-    
+             if (id(helper1b).state) {
+               it.print(0, 10, id(fonthellper), id(my_green), "$helper_1_name On");
+               } else {
+               it.print(0, 10, id(fonthellper), id(my_red), "$helper_1_name Off");
+             }    
+             if (id(helper2b).state) {
+               it.print(130, 10, id(fonthellper), id(my_green), "$helper_2_name On");
+               } else {
+               it.print(130, 10, id(fonthellper), id(my_red), "$helper_2_name Off");
+             }          
+             if (id(helper3b).state) {
+               it.print(0, 100, id(fonthellper), id(my_green), "$helper_3_name On");
+               } else {
+               it.print(0, 100, id(fonthellper), id(my_red), "$helper_3_name Off");
+             }    
+             if (id(helper4b).state) {
+               it.print(130, 100, id(fonthellper), id(my_green), "$helper_4_name On");
+               } else {
+               it.print(130, 100, id(fonthellper), id(my_red), "$helper_4_name Off");
+             }                          
+             if (id(helper5b).state) {
+               it.print(0, 195, id(fonthellper), id(my_green), "$helper_5_name On");
+               } else {
+               it.print(0, 195, id(fonthellper), id(my_red), "$helper_5_name Off");
+             }    
+             if (id(helper6b).state) {
+               it.print(130, 195, id(fonthellper), id(my_green), "$helper_6_name On");
+               } else {
+               it.print(130, 195, id(fonthellper), id(my_red), "$helper_6_name Off");
+             }          
+             if (id(helper7b).state) {
+               it.print(0, 290, id(fonthellper), id(my_green), "$helper_7_name On");
+               } else {
+               it.print(0, 290, id(fonthellper), id(my_red), "$helper_7_name Off");
+             }    
+             if (id(helper8b).state) {
+               it.print(130, 290, id(fonthellper), id(my_green), "$helper_8_name On");
+               } else {
+               it.print(130, 290, id(fonthellper), id(my_red), "$helper_8_name Off");
+             }   
+
+    on_page_change:
+      - from: page1
+        to: page2
+        then:
+          - wait_until:
+              condition:
+                for:
+                   time: 5s
+                   condition:     
+                      - binary_sensor.is_off: pagetimeout1
+              timeout: 60s
+          - display.page.show: page1
+      - from: page1
+        to: page3
+        then:
+          - wait_until:
+              condition:
+                for:
+                   time: 5s
+                   condition:     
+                      - binary_sensor.is_off: pagetimeout1
+              timeout: 60s
+          - display.page.show: page1          
+      - from: page1
+        to: page4
+        then:
+          - wait_until:
+              condition:
+                for:
+                   time: 10s
+                   condition:     
+                      - binary_sensor.is_off: pagetimeout1
+              timeout: 60s
+          - display.page.show: page1          
+
+
+
+
+
+
+
+
+
+color:
+  - id: my_lightblue
+    red: 0%
+    green: 25%
+    blue: 100%
+  - id: my_tile
+    red: 0%
+    green: 100%
+    blue: 78%
+  - id: my_pink
+    red: 100%
+    green: 0%
+    blue: 78%    
+  - id: my_yellow
+    red: 100%
+    green: 100%
+    blue: 0%
+  - id: my_blue
+    red: 0%
+    green: 0%
+    blue: 100%
+  - id: my_red
+    red: 100%
+    green: 0%
+    blue: 0% 
+  - id: my_pinkor
+    red: 100%
+    green: 0%
+    blue: 70%    
+  - id: my_green
+    red: 0%
+    green: 100%
+    blue: 0%        
+sensor:
+  - platform: homeassistant
+    entity_id: $thermostat
+    attribute: current_temperature
+    id: mysensor1
+    on_value:
+      if:
+        condition:
+          binary_sensor.is_off: statusofepshome
+        then:
+             - display.page.show: page0
+  - platform: homeassistant
+    entity_id: $thermostat
+    attribute: current_temperature
+    id: mysensor1asdfsadf
+    on_value:
+      if:
+        condition:
+          binary_sensor.is_on: statusofepshome
+        then:
+             - display.page.show: page1
+  - platform: homeassistant
+    entity_id: $thermostat
+    attribute: temperature    
+    id: mysensor12
+  - platform: homeassistant
+    entity_id: $thermostat
+    attribute: temperature
+    id: target_temp_2
+    internal: true
+binary_sensor:
+  - platform: homeassistant
+    entity_id: $helper_1
+    id: helper1b
+  - platform: homeassistant
+    entity_id: $helper_2
+    id: helper2b
+  - platform: homeassistant
+    entity_id: $helper_3
+    id: helper3b
+  - platform: homeassistant
+    entity_id: $helper_4
+    id: helper4b    
+  - platform: homeassistant
+    entity_id: $helper_5
+    id: helper5b
+  - platform: homeassistant
+    entity_id: $helper_6
+    id: helper6b
+  - platform: homeassistant
+    entity_id: $helper_7
+    id: helper7b
+  - platform: homeassistant
+    entity_id: $helper_8
+    id: helper8b        
+
+
+  - platform: status
+    id: statusofepshome
+  - platform: homeassistant
+    entity_id: switch.sonos_sub
+    id: subtest
+  - platform: homeassistant
+    entity_id: switch.sonos_sonosf_surround_enabled
+    id: sourndsound 
+  - platform: homeassistant
+    entity_id: switch.livingroom_projector
+    id: project 
+  - platform: homeassistant
+    entity_id: binary_sensor.zone_status
+    id: doorsclosed   
+  - platform: homeassistant
+    entity_id: binary_sensor.alarm_is_on
+    id: alarmon 
+  - platform: homeassistant
+    entity_id: binary_sensor.sonso_bass
+    id: bass
+  - platform: homeassistant
+    entity_id: binary_sensor.sonos_sournd
+    id: suround     
+
+##############################  UP AND DOWN ###################################
+
+  - platform: xpt2046
+    xpt2046_id: touchscreen
+    id: touch_up
+    x_min: 81
+    x_max: 160
+    y_min: 226
+    y_max: 320
+    on_press:
+      - if:
+          condition:
+            - sensor.in_range:
+               id: target_temp_2
+               below: '76'    
+            - or:   
+              - display.is_displaying_page:
+                  id: tft_ha
+                  page_id: page1
+          then:    
+            - homeassistant.service:
+                service: climate.set_temperature
+                data:
+                  temperature: !lambda |-
+                              return id(target_temp_2).state + 1;
+                data_template:
+                  entity_id: $thermostat  
+
+  - platform: xpt2046
+    xpt2046_id: touchscreen
+    id: touch_down
+    x_min: 81
+    x_max: 160
+    y_min: 0
+    y_max: 118
+    on_press:
+      - if:
+          condition:
+            - sensor.in_range:
+               id: target_temp_2
+               above: '58'    
+            - or:   
+              - display.is_displaying_page:
+                  id: tft_ha
+                  page_id: page1
+          then:      
+            - homeassistant.service:
+                service: climate.set_temperature
+                data:
+                  temperature: !lambda |-
+                              return id(target_temp_2).state - 1;
+                data_template:
+                  entity_id: $thermostat 
+
+##############################  HVAC ###################################
+    
+  - platform: xpt2046
+    xpt2046_id: touchscreen
+    id: b2
+    x_min: 0
+    x_max: 80
+    y_min: 0
+    y_max: 75
+    on_press:
+        then:
+         - delay: 2s
+         - switch.turn_on: switchcool
+         - delay: 1.5s
+         - switch.turn_off: switchcool
+                  
+         
+         
+  - platform: xpt2046
+    xpt2046_id: touchscreen
+    id: b4
+    x_min: 0
+    x_max: 80
+    y_min: 0
+    y_max: 75
+    on_press:
+        then:
+         - delay: 4s
+         - switch.turn_on: switchoff  
+         - delay: 2s
+         - switch.turn_off: switchoff           
+
+  - platform: xpt2046
+    xpt2046_id: touchscreen
+    id: sonospage
+    x_min: 161
+    x_max: 300
+    y_min: 0
+    y_max: 75
+    filters:
+      - delayed_off: 10ms
+    on_press:
+      - if:
+          condition:
+            - display.is_displaying_page:
+                id: tft_ha
+                page_id: page1
+          then:   
+           - display.page.show: page4
+          # - delay: 30s           
+          # - display.page.show: page1
+##############################  DEVICES 1 & 2 ###################################
+
+  - platform: xpt2046
+    xpt2046_id: touchscreen
+    id: asdfasfd
+    x_min: 161
+    x_max: 300
+    y_min: 230
+    y_max: 300
+    on_press:    
+      - if:
+          condition:
+            - display.is_displaying_page:
+                id: tft_ha
+                page_id: page1
+          then:   
+          - display.page.show: page2
+
+           
+  - platform: xpt2046
+    xpt2046_id: touchscreen
+    id: pagetimeout1
+    x_min: 0
+    x_max: 300
+    y_min: 0
+    y_max: 300
+    
+  - platform: xpt2046
+    xpt2046_id: touchscreen
+    id: asdfadfasdf
+    x_min: 80
+    x_max: 300   #180
+    y_min: 233
+    y_max: 300
+    on_press:    
+      - if:
+          condition:
+            for:
+              time: 250ms
+              condition:     
+                - display.is_displaying_page:
+                    id: tft_ha
+                    page_id: page2
+          then:   
+            - homeassistant.service:
+                service: $device_1_call_service_up
+                data_template:
+                    entity_id: $device_1  
+          
+
+  - platform: xpt2046
+    xpt2046_id: touchscreen
+    id: asdfadf
+    x_min: 80
+    x_max: 300   #180
+    y_min: 161
+    y_max: 232
+    on_press:    
+      - if:
+          condition:
+            for:
+              time: 250ms
+              condition:     
+                - display.is_displaying_page:
+                    id: tft_ha
+                    page_id: page2
+          then:   
+            - homeassistant.service:
+                service: $device_1_call_service_down
+                data_template:
+                    entity_id: $device_1  
+          
+
+                    
+                
+  - platform: xpt2046
+    xpt2046_id: touchscreen
+    id: basdfsasdfdf
+    x_min: 0
+    x_max: 79
+    y_min: 152
+    y_max: 300
+    on_press:    
+      - if:
+          condition:
+            for:
+              time: 250ms
+              condition:     
+                - display.is_displaying_page:
+                    id: tft_ha
+                    page_id: page2
+          then:   
+            - homeassistant.service:
+                service: cover.set_cover_position
+                data:
+                  position: "50"
+                data_template:
+                  entity_id: $device_1    
+
+
+  - platform: xpt2046
+    xpt2046_id: touchscreen
+    id: adsfas
+    x_min: 80
+    x_max: 300   #180
+    y_min: 80
+    y_max: 160
+    on_press:    
+      - if:
+          condition:
+            for:
+              time: 250ms
+              condition:     
+                - display.is_displaying_page:
+                    id: tft_ha
+                    page_id: page2
+          then:   
+            - homeassistant.service:
+                service: $device_2_call_service_up
+                data_template:
+                    entity_id: $device_2    
+          
+  - platform: xpt2046
+    xpt2046_id: touchscreen
+    id: asdfasdf
+    x_min: 80
+    x_max: 300   #180
+    y_min: 0
+    y_max: 79
+    on_press:    
+      - if:
+          condition:
+            for:
+              time: 250ms
+              condition:     
+                - display.is_displaying_page:
+                    id: tft_ha
+                    page_id: page2
+          then:   
+            - homeassistant.service:
+                service: $device_2_call_service_down
+                data_template:
+                    entity_id: $device_2   
+
+  - platform: xpt2046
+    xpt2046_id: touchscreen
+    id: basdfsaasdfdf
+    x_min: 0
+    x_max: 79
+    y_min: 0
+    y_max: 151
+    on_press:    
+      - if:
+          condition:
+            for:
+              time: 250ms
+              condition:     
+                - display.is_displaying_page:
+                    id: tft_ha
+                    page_id: page2
+          then:   
+            - homeassistant.service:
+                service: cover.set_cover_position
+                data:
+                  position: "50"
+                data_template:
+                  entity_id: $device_2
+          
+      
+             
+
+# ##############################  ALARM  ###################################
+
+  - platform: xpt2046
+    xpt2046_id: touchscreen
+    id: asdfasdfad
+    x_min: 0
+    x_max: 80
+    y_min: 230
+    y_max: 300
+    on_press:    
+      - if:
+          condition:
+            - display.is_displaying_page:
+                id: tft_ha
+                page_id: page1
+          then:   
+          - display.page.show: page3
+          # - delay: 4s
+          # - display.page.show: page1   
+
+
+ 
+  
+  - platform: xpt2046
+    xpt2046_id: touchscreen
+    id: asdfasd
+    x_min: 0
+    x_max: 300
+    y_min: 160
+    y_max: 300
+    on_press:    
+      - if:
+          condition:
+            for:
+              time: 250ms
+              condition:     
+                - display.is_displaying_page:
+                    id: tft_ha
+                    page_id: page3
+          then:   
+            - homeassistant.service:
+                service: alarmo.disarm
+                data_template:
+                    entity_id: $alarm_name
+                    code: "$alarmcode"
+  - platform: xpt2046
+    xpt2046_id: touchscreen
+    id: asdfasddf
+    x_min: 0
+    x_max: 150
+    y_min: 0
+    y_max: 159
+    on_press:    
+      - if:
+          condition:
+            for:
+              time: 250ms
+              condition:     
+                - display.is_displaying_page:
+                    id: tft_ha
+                    page_id: page3
+          then:   
+            - homeassistant.service:
+                service: alarmo.arm
+                data_template:
+                    entity_id: $alarm_name
+                    mode: "home"
+  - platform: xpt2046
+    xpt2046_id: touchscreen
+    id: asdfasadfddf
+    x_min: 151
+    x_max: 300
+    y_min: 0
+    y_max: 159
+    on_press:    
+      - if:
+          condition:
+            for:
+              time: 250ms
+              condition:     
+                - display.is_displaying_page:
+                    id: tft_ha
+                    page_id: page3
+          then:   
+            - homeassistant.service:
+                service: alarmo.arm
+                data_template:
+                    entity_id: $alarm_name
+                    mode: "away"    
+                    
+  ############### HELPERS ####################3
+  - platform: xpt2046
+    xpt2046_id: touchscreen
+    id: device_1_touch
+    x_min: 20
+    x_max: 120
+    y_min: 227
+    y_max: 295
+    on_press:    
+      - if:
+          condition:
+            for:
+              time: 250ms
+              condition:     
+                - display.is_displaying_page:
+                    id: tft_ha
+                    page_id: page4
+          then:   
+            - homeassistant.service:
+                service: $helper_1_call_service
+                data_template:
+                    entity_id: $helper_1   
+                    
+  - platform: xpt2046
+    xpt2046_id: touchscreen
+    id: device_2_touch
+    x_min: 121
+    x_max: 215
+    y_min: 227
+    y_max: 295
+    on_press:    
+      - if:
+          condition:
+            for:
+              time: 250ms
+              condition:     
+                - display.is_displaying_page:
+                    id: tft_ha
+                    page_id: page4
+          then:   
+            - homeassistant.service:
+                service: $helper_2_call_service
+                data_template:
+                    entity_id: $helper_2                      
+                    
+  - platform: xpt2046
+    xpt2046_id: touchscreen
+    id: device_3_touch
+    x_min: 20
+    x_max: 120
+    y_min: 160
+    y_max: 227
+    on_press:    
+      - if:
+          condition:
+            for:
+              time: 250ms
+              condition:     
+                - display.is_displaying_page:
+                    id: tft_ha
+                    page_id: page4
+          then:   
+            - homeassistant.service:
+                service: $helper_3_call_service
+                data_template:
+                    entity_id: $helper_3
+                    
+  - platform: xpt2046
+    xpt2046_id: touchscreen
+    id: device_4_touch
+    x_min: 121
+    x_max: 215
+    y_min: 160
+    y_max: 227
+    on_press:    
+      - if:
+          condition:
+            for:
+              time: 250ms
+              condition:     
+                - display.is_displaying_page:
+                    id: tft_ha
+                    page_id: page4
+          then:   
+            - homeassistant.service:
+                service: $helper_4_call_service
+                data_template:
+                    entity_id: $helper_4                    
+
+  - platform: xpt2046
+    xpt2046_id: touchscreen
+    id: device_5_touch
+    x_min: 20
+    x_max: 120
+    y_min: 93
+    y_max: 160
+    on_press:    
+      - if:
+          condition:
+            for:
+              time: 250ms
+              condition:     
+                - display.is_displaying_page:
+                    id: tft_ha
+                    page_id: page4
+          then:   
+            - homeassistant.service:
+                service: $helper_5_call_service
+                data_template:
+                    entity_id: $helper_5  
+                    
+  - platform: xpt2046
+    xpt2046_id: touchscreen
+    id: device_6_touch
+    x_min: 121
+    x_max: 215
+    y_min: 93
+    y_max: 160
+    on_press:    
+      - if:
+          condition:
+            for:
+              time: 250ms
+              condition:     
+                - display.is_displaying_page:
+                    id: tft_ha
+                    page_id: page4
+          then:   
+            - homeassistant.service:
+                service: $helper_6_call_service
+                data_template:
+                    entity_id: $helper_6                     
+                    
+  - platform: xpt2046
+    xpt2046_id: touchscreen
+    id: device_7_touch
+    x_min: 20
+    x_max: 120
+    y_min: 26
+    y_max: 93
+    on_press:    
+      - if:
+          condition:
+            for:
+              time: 250ms
+              condition:     
+                - display.is_displaying_page:
+                    id: tft_ha
+                    page_id: page4
+          then:   
+            - homeassistant.service:
+                service: $helper_7_call_service
+                data_template:
+                    entity_id: $helper_7
+                    
+  - platform: xpt2046
+    xpt2046_id: touchscreen
+    id: device_8_touch
+    x_min: 121
+    x_max: 215
+    y_min: 26
+    y_max: 93
+    on_press:    
+      - if:
+          condition:
+            for:
+              time: 250ms
+              condition:     
+                - display.is_displaying_page:
+                    id: tft_ha
+                    page_id: page4
+          then:   
+            - homeassistant.service:
+                service: $helper_8_call_service
+                data_template:
+                    entity_id: $helper_8                                      
+                    
+
+ 
+text_sensor:
+  - platform: homeassistant
+    entity_id: $thermostat
+    id: mysensor11  
+  - platform: homeassistant
+    entity_id: $thermostat
+    attribute: hvac_action
+    id: mysensor10
+
+interval:
+  - interval: 2s
+    then:
+      - switch.toggle: goodnight   
+    
+switch:
+  - platform: template
+    optimistic: true
+    id: goodnight
+    on_turn_on:
+        then:
+          - wait_until:
+              condition:
+                for:
+                   time: 5s
+                   condition:     
+                      - binary_sensor.is_on: pagetimeout1
+          - homeassistant.service:
+              service: $main_push_device_service
+              data_template:
+                entity_id: $main_push_device
+ 
+  - platform: template
+    optimistic: true
+    id: switchcool
+    on_turn_on:
+     - if: 
+          condition:
+            - display.is_displaying_page:
+                id: tft_ha
+                page_id: page1 
+            - for:
+                time: 2s
+                condition:
+                  - binary_sensor.is_on: b2                  
+            - and:    
+              - or:
+                  - text_sensor.state:
+                      id: mysensor11
+                      state: 'heat'
+                  - text_sensor.state:
+                      id: mysensor11
+                      state: 'off'                         
+          then:   
+            - homeassistant.service:
+                service: climate.set_hvac_mode
+                data:
+                  hvac_mode: "cool"
+                data_template:
+                  entity_id: $thermostat       
+            - switch.turn_off: switchcool   
+     - if: 
+          condition:
+            - display.is_displaying_page:
+                id: tft_ha
+                page_id: page1 
+            - for:
+                time: 2s
+                condition:
+                  - binary_sensor.is_on: b2                  
+            - and:    
+              - or:
+                  - text_sensor.state:
+                      id: mysensor11
+                      state: 'cool'
+          then:   
+            - homeassistant.service:
+                service: climate.set_hvac_mode
+                data:
+                  hvac_mode: "heat"
+                data_template:
+                  entity_id: $thermostat       
+            - switch.turn_off: switchcool   
+  - platform: template
+    optimistic: true
+    id: switchoff
+    on_turn_on:
+     - if: 
+          condition:
+            - display.is_displaying_page:
+                id: tft_ha
+                page_id: page1 
+            - for:
+                time: 4s
+                condition:
+                  - binary_sensor.is_on: b4               
+            - and:    
+              - or:
+                  - text_sensor.state:
+                      id: mysensor11
+                      state: 'heat'
+                  - text_sensor.state:
+                      id: mysensor11
+                      state: 'cool'                         
+          then:   
+            - homeassistant.service:
+                service: climate.set_hvac_mode
+                data:
+                  hvac_mode: "off"
+                data_template:
+                  entity_id: $thermostat       
+            - switch.turn_off: switchoff               
+        

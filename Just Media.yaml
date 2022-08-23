@@ -1,0 +1,878 @@
+substitutions:
+  $esp_name: "sonos-livingroom-touchscreen"
+### PAGE 1 ###
+  $media_player: "media_player.sonos"    
+### PAGE 2 ###
+  $sound_device_1_call_service: "switch.toggle"  
+  $sound_device_1: "switch.sonos_sub " 
+  $sound_device_1_name: "Bass "   
+  $sound_device_2_call_service: "switch.toggle"  
+  $sound_device_2: "switch.sonos_sonosf_surround_enabled" 
+  $sound_device_2_name: "Surrond Sound"     
+  $sound_device_3_call_service: "switch.toggle"  
+  $sound_device_3: "switch.livingroom_projector"   
+  $sound_device_3_name: "Projector"
+
+esphome:
+  name: $esp_name
+
+esp32:
+  board: wemos_d1_mini32
+  framework:
+    type: arduino
+<<: !include include/lwifi.yaml
+api:
+  password: !secret api_password
+ota:
+  safe_mode: false
+logger:
+  
+
+  
+
+spi:
+  clk_pin: D5
+  mosi_pin: D7
+  miso_pin: D6
+xpt2046:
+  id: touchscreen
+  cs_pin: D4
+  dimension_x: 240
+  dimension_y: 320
+  on_state:
+    - lambda: |-
+        if (touched)
+          ESP_LOGI("cal", "x=%d, y=%d, x_raw=%d, y_raw=%d",
+              id(touchscreen).x,
+              id(touchscreen).y,
+              id(touchscreen).x_raw,
+              id(touchscreen).y_raw
+              );
+font:
+  - file: "_fonts/refsan.ttf"
+    id: font2
+    size: 52
+  - file: "_fonts/refsan.ttf"
+    id: font4
+    size: 18
+  - file: "_fonts/refsan.ttf"
+    id: font5
+    size: 15
+  - file: "_fonts/refsan.ttf"
+    id: touch 
+    size: 40    
+  - file: "_fonts/refsan.ttf"
+    id: touch_2
+    size: 30        
+  - file: "_fonts/refsan.ttf"
+    id: font6
+    size: 28
+  - file: "_fonts/refsan.ttf"
+    id: font7
+    size: 22
+  - file: 'MaterialDesign-Webfont/fonts/materialdesignicons-webfont.ttf' 
+    id: icon_font_new
+    size: 55
+    glyphs: [
+      '󰜷', # mdi-arrow up
+      '󰜮', # hdi-arrow Down
+      '󰁀', # hdi-ahalf      
+      '󰒬', # hdi-Skip   
+      '󰒫', # hdi-Skisadfsdf
+      '󰏤', # hdi-mute 
+      '󰟲', # hdi-projector   
+    ]
+    
+  - file: 'MaterialDesign-Webfont/fonts/materialdesignicons-webfont.ttf' 
+    id: icon_font_new_3
+    size: 55
+    glyphs: [
+      '󱄜', # hdi-cover
+      '󰖮', # mdi-window          
+    ]    
+    
+  - file: 'MaterialDesign-Webfont/fonts/materialdesignicons-webfont.ttf' 
+    id: icon_font_new_2
+    size: 35
+    glyphs: [
+      '󰈐', # mdi-confort
+      '󰜷', # mdi-arrow up
+      '󰖮', # mdi-window      
+      '󰞎', # mdi-alarm  
+      '󰜟', # mdi-speaker     
+      '󰏤', # hdi-mute 
+      '󰟲', # hdi-projector 
+      '󰓃', # hdi-sub
+      '󰗅', # hdi-surround  
+      '󰠜', # hdi-door      
+    ]    
+  - file: 'MaterialDesign-Webfont/fonts/materialdesignicons-webfont.ttf' 
+    id: icon_font_alarm
+    size: 150
+    glyphs: [
+      '󰞎', # mdi-alarm       
+    ]        
+display:
+  - platform: ili9341
+    model: TFT 2.4
+    cs_pin: D0
+    dc_pin: D8
+    led_pin: D1
+    reset_pin: D2
+    rotation: 0
+    id: tft_ha
+    update_interval: 250ms    
+    pages:
+      - id: page1    
+        lambda: |-    
+             it.print(95, 40, id(icon_font_new), id(my_lightblue), "󰜷");
+             it.print(52, 0, id(touch), id(my_green), "SONOS");  
+             it.print(28, 90, id(font6), id(my_green), "Volume Level");    
+             it.printf(100, 120, id(font6), "%.f", id(mysensor1bb).state);             
+             it.print(0, 160, id(font6), id(my_green), "Title");
+             it.printf(0, 192, id(font5), " %s",id(mysensor3).state.c_str());                 
+             it.print(0, 210, id(font6), id(my_green), "Artist");       
+             it.printf(0, 245, id(font5), " %s",id(mysensor4).state.c_str());   
+             it.print(95, 270, id(icon_font_new), id(my_lightblue), "󰜮");  
+             it.print(0, 270, id(icon_font_new), id(my_lightblue), "󰒫");   
+             it.print(190, 270, id(icon_font_new), id(my_lightblue), "󰒬");   
+             it.print(208, 4, id(icon_font_new_2), id(my_lightblue), "󰏤"); 
+             it.print(0, 11, id(font4), id(my_lightblue), "SUB");  
+             if (id(suround).state) {
+               it.print(40, 50, id(icon_font_new_2), id(my_green), "󰗅");
+               } else {
+               it.print(50, 0, id(icon_font_new_2), id(my_green), "");
+             }  
+             if (id(bass).state) {
+               it.print(166, 50, id(icon_font_new_2), id(my_green), "󰓃");
+               } else {
+               it.print(50, 0, id(icon_font_new_2), id(my_green), "");
+             }                 
+      - id: page2
+        lambda: |-         
+             it.print(45, 0, id(font4), id(my_lightblue), "SOUND OPTIONS");        
+             if (id(subtest).state) {
+               it.print(88, 50, id(font4), id(my_green), "$sound_device_1_name On");
+               } else {
+               it.print(88, 50, id(font4), id(my_red), "$sound_device_1_name Off");
+             }  
+             if (id(sourndsound).state) {
+               it.print(42, 150, id(font4), id(my_green), "$sound_device_2_name On");
+               } else {
+               it.print(42, 150, id(font4), id(my_red), "$sound_device_2_name Off");
+             }  
+             if (id(project).state) {
+               it.print(70, 250, id(font4), id(my_green), "$sound_device_3_name On");
+               } else {
+               it.print(70, 250, id(font4), id(my_red), "$sound_device_3_name Off");
+             }  
+      - id: page3
+        lambda: |-    
+             it.printf(0, 0, id(font4), " %.f",id(bassnumber).state);                   
+             it.print(42, 0, id(font4), id(my_lightblue), "Bass");  
+             it.print(60, 40, id(font4), id(my_lightblue), "1");     
+             it.print(60, 80, id(font4), id(my_lightblue), "2");                  
+             it.print(60, 120, id(font4), id(my_lightblue), "3");   
+             it.print(60, 160, id(font4), id(my_lightblue), "4");   
+             it.print(60, 200, id(font4), id(my_lightblue), "5");   
+             it.print(60, 240, id(font4), id(my_lightblue), "6");
+             it.print(60, 280, id(font4), id(my_lightblue), "7");    
+
+             it.printf(200, 0, id(font4), " %.f",id(trebnumber).state);              
+             it.print(135, 0, id(font4), id(my_lightblue), "Treble");  
+             it.print(160, 40, id(font4), id(my_lightblue), "1");               
+             it.print(160, 80, id(font4), id(my_lightblue), "2");    
+             it.print(160, 120, id(font4), id(my_lightblue), "3");
+             it.print(160, 160, id(font4), id(my_lightblue), "4");   
+             it.print(160, 200, id(font4), id(my_lightblue), "5");
+             it.print(160, 240, id(font4), id(my_lightblue), "6");
+             it.print(160, 280, id(font4), id(my_lightblue), "7");                  
+    on_page_change:
+      - from: page1
+        to: page2
+        then:
+          - wait_until:
+              condition:
+                for:
+                   time: 5s
+                   condition:     
+                      - binary_sensor.is_off: pagetimeout1
+              timeout: 60s
+          - display.page.show: page1
+      - from: page1
+        to: page3
+        then:
+          - wait_until:
+              condition:
+                for:
+                   time: 5s
+                   condition:     
+                      - binary_sensor.is_off: pagetimeout1
+              timeout: 60s
+          - display.page.show: page1          
+                     
+                     
+              
+
+
+color:
+  - id: my_lightblue
+    red: 0%
+    green: 25%
+    blue: 100%
+  - id: my_tile
+    red: 0%
+    green: 100%
+    blue: 78%
+  - id: my_pink
+    red: 100%
+    green: 0%
+    blue: 78%    
+  - id: my_yellow
+    red: 100%
+    green: 100%
+    blue: 0%
+  - id: my_blue
+    red: 0%
+    green: 0%
+    blue: 100%
+  - id: my_red
+    red: 100%
+    green: 0%
+    blue: 0% 
+  - id: my_pinkor
+    red: 100%
+    green: 0%
+    blue: 70%    
+  - id: my_green
+    red: 0%
+    green: 100%
+    blue: 0%      
+sensor:
+  - platform: homeassistant
+    entity_id: $media_player
+    attribute: volume_level
+    id: mysensor1bb 
+    filters:
+      - lambda: return x * 100;    
+  - platform: homeassistant
+    entity_id: $media_player
+    attribute: volume_level
+    id: mysensor1b 
+    
+  - platform: homeassistant
+    entity_id: number.sonosf_bass
+    id: bassnumber           
+     
+  - platform: homeassistant
+    entity_id: number.sonosf_treble
+    id: trebnumber        
+     
+binary_sensor:
+
+  - platform: status
+    id: statusofepshome
+  - platform: homeassistant
+    entity_id: switch.sonos_sub
+    id: subtest
+  - platform: homeassistant
+    entity_id: switch.sonos_sonosf_surround_enabled
+    id: sourndsound 
+  - platform: homeassistant
+    entity_id: switch.livingroom_projector
+    id: project 
+  - platform: homeassistant
+    entity_id: binary_sensor.zone_status
+    id: doorsclosed   
+  - platform: homeassistant
+    entity_id: binary_sensor.alarm_is_on
+    id: alarmon 
+  - platform: homeassistant
+    entity_id: binary_sensor.sonso_bass
+    id: bass
+  - platform: homeassistant
+    entity_id: binary_sensor.sonos_sournd
+    id: suround   
+    
+
+  - platform: xpt2046
+    xpt2046_id: touchscreen
+    id: pagetimeout1
+    x_min: 0
+    x_max: 300
+    y_min: 0
+    y_max: 300
+
+ 
+  - platform: xpt2046
+    xpt2046_id: touchscreen
+    id: touch_upadf
+    x_min: 81
+    x_max: 160
+    y_min: 226
+    y_max: 320
+    on_press:
+      - if:
+          condition:
+            - sensor.in_range:
+               id: mysensor1b
+               below: '1'               
+            - display.is_displaying_page:
+                id: tft_ha
+                page_id: page1
+          then:      
+            - homeassistant.service:
+                service: media_player.volume_set
+                data:
+                  volume_level: !lambda |-
+                              return id(mysensor1b).state + .05;
+                data_template:
+                  entity_id: $media_player  
+
+  - platform: xpt2046
+    xpt2046_id: touchscreen
+    id: touch_downadf
+    x_min: 81
+    x_max: 160
+    y_min: 0
+    y_max: 118
+    on_press:
+      - if:
+          condition:
+            - sensor.in_range:
+               id: mysensor1b
+               above: '.01' 
+            - display.is_displaying_page:
+                  id: tft_ha
+                  page_id: page1         
+          then:      
+            - homeassistant.service:
+                service: media_player.volume_set
+                data:
+                  volume_level: !lambda |-
+                              return id(mysensor1b).state - .05;
+                data_template:
+                  entity_id: $media_player  
+ 
+  - platform: xpt2046
+    xpt2046_id: touchscreen
+    id: reversesdgf
+    x_min: 0
+    x_max: 80
+    y_min: 0
+    y_max: 66
+    on_press:
+      - if:
+          condition:
+            for:
+              time: 250ms
+              condition:     
+                - display.is_displaying_page:
+                    id: tft_ha
+                    page_id: page1
+          then:      
+            - homeassistant.service:
+                service: media_player.media_previous_track
+                data_template:
+                    entity_id: $media_player   
+                    
+  - platform: xpt2046
+    xpt2046_id: touchscreen
+    id: skip
+    x_min: 170
+    x_max: 300
+    y_min: 0
+    y_max: 66
+    on_press:
+      - if:
+          condition:
+            for:
+              time: 250ms
+              condition:     
+                - display.is_displaying_page:
+                    id: tft_ha
+                    page_id: page1
+          then:      
+            - homeassistant.service:
+                service: media_player.media_next_track
+                data_template:
+                    entity_id: $media_player                        
+             
+  - platform: xpt2046
+    xpt2046_id: touchscreen
+    id: mute
+    x_min: 190
+    x_max: 300
+    y_min: 260
+    y_max: 300
+    on_press:
+      - if:
+          condition:
+            for:
+              time: 250ms
+              condition:     
+                - display.is_displaying_page:
+                    id: tft_ha
+                    page_id: page1
+          then:      
+            - homeassistant.service:
+                service: media_player.media_play_pause
+                data_template:
+                    entity_id: $media_player
+      
+  - platform: xpt2046
+    xpt2046_id: touchscreen
+    id: asdfassdfgsdgf
+    x_min: 0
+    x_max: 80
+    y_min: 260
+    y_max: 300
+    on_press:    
+      - if:
+          condition:
+            for:
+              time: 250ms
+              condition:     
+                - display.is_displaying_page:
+                    id: tft_ha
+                    page_id: page1
+          then:   
+          - display.page.show: page2  
+          # - delay: 30s
+          # - display.page.show: page1     
+      
+  - platform: xpt2046
+    xpt2046_id: touchscreen
+    id: bassswitch
+    x_min: 0
+    x_max: 300
+    y_min: 200
+    y_max: 300
+    on_press:
+      - if:
+          condition:
+            for:
+              time: 250ms
+              condition:     
+                - display.is_displaying_page:
+                    id: tft_ha
+                    page_id: page2
+          then:    
+            - homeassistant.service:
+                service: $sound_device_1_call_service
+                data_template:
+                    entity_id: $sound_device_1   
+            # - delay: 8s                          
+            # - display.page.show: page4          
+                    
+  - platform: xpt2046
+    xpt2046_id: touchscreen
+    id: sroundsound
+    x_min: 0
+    x_max: 300
+    y_min: 100
+    y_max: 200
+    on_press:
+      - if:
+          condition:
+            for:
+              time: 250ms
+              condition:     
+                - display.is_displaying_page:
+                    id: tft_ha
+                    page_id: page2
+          then:       
+            - homeassistant.service:
+                service: $sound_device_2_call_service
+                data_template:
+                    entity_id: $sound_device_2 
+            # - delay: 8s        
+            # - display.page.show: page4
+ 
+  - platform: xpt2046
+    xpt2046_id: touchscreen
+    id: projector
+    x_min: 0
+    x_max: 300
+    y_min: 0
+    y_max: 100
+    on_press:
+      - if:
+          condition:
+            for:
+              time: 250ms
+              condition:     
+                - display.is_displaying_page:
+                    id: tft_ha
+                    page_id: page2
+          then:       
+            - homeassistant.service:
+                service: $sound_device_3_call_service
+                data_template:
+                    entity_id: $sound_device_3    
+            # - delay: 8s                          
+            # - display.page.show: page4               
+#######################################  SOUND SELECT ###########
+  - platform: xpt2046
+    xpt2046_id: touchscreen
+    id: bass1
+    x_min: 0
+    x_max: 137
+    y_min: 254
+    y_max: 295
+    on_press:
+      - if:
+          condition:
+            for:
+              time: 250ms
+              condition:     
+                - display.is_displaying_page:
+                    id: tft_ha
+                    page_id: page3
+          then:       
+            - homeassistant.service:
+                service: number.set_value
+                data:
+                  value: "-10"
+                data_template:
+                    entity_id: number.sonosf_bass
+  - platform: xpt2046
+    xpt2046_id: touchscreen
+    id: bass2
+    x_min: 0
+    x_max: 137
+    y_min: 216
+    y_max: 254
+    on_press:
+      - if:
+          condition:
+            for:
+              time: 250ms
+              condition:     
+                - display.is_displaying_page:
+                    id: tft_ha
+                    page_id: page3
+          then:       
+            - homeassistant.service:
+                service: number.set_value
+                data:
+                  value: "-7"
+                data_template:
+                    entity_id: number.sonosf_bass    
+  - platform: xpt2046
+    xpt2046_id: touchscreen
+    id: bass3
+    x_min: 0
+    x_max: 137
+    y_min: 178
+    y_max: 216
+    on_press:
+      - if:
+          condition:
+            for:
+              time: 250ms
+              condition:     
+                - display.is_displaying_page:
+                    id: tft_ha
+                    page_id: page3
+          then:       
+            - homeassistant.service:
+                service: number.set_value
+                data:
+                  value: "-4"
+                data_template:
+                    entity_id: number.sonosf_bass   
+  - platform: xpt2046
+    xpt2046_id: touchscreen
+    id: bass4
+    x_min: 0
+    x_max: 137
+    y_min: 140
+    y_max: 178
+    on_press:
+      - if:
+          condition:
+            for:
+              time: 250ms
+              condition:     
+                - display.is_displaying_page:
+                    id: tft_ha
+                    page_id: page3
+          then:       
+            - homeassistant.service:
+                service: number.set_value
+                data:
+                  value: "1"
+                data_template:
+                    entity_id: number.sonosf_bass
+  - platform: xpt2046
+    xpt2046_id: touchscreen
+    id: bass5
+    x_min: 0
+    x_max: 137
+    y_min: 102
+    y_max: 140
+    on_press:
+      - if:
+          condition:
+            for:
+              time: 250ms
+              condition:     
+                - display.is_displaying_page:
+                    id: tft_ha
+                    page_id: page3
+          then:       
+            - homeassistant.service:
+                service: number.set_value
+                data:
+                  value: "4"
+                data_template:
+                    entity_id: number.sonosf_bass 
+  - platform: xpt2046
+    xpt2046_id: touchscreen
+    id: bass6
+    x_min: 0
+    x_max: 137
+    y_min: 64
+    y_max: 102
+    on_press:
+      - if:
+          condition:
+            for:
+              time: 250ms
+              condition:     
+                - display.is_displaying_page:
+                    id: tft_ha
+                    page_id: page3
+          then:       
+            - homeassistant.service:
+                service: number.set_value
+                data:
+                  value: "7"
+                data_template:
+                    entity_id: number.sonosf_bass   
+  - platform: xpt2046
+    xpt2046_id: touchscreen
+    id: bass7
+    x_min: 0
+    x_max: 137
+    y_min: 26
+    y_max: 64
+    on_press:
+      - if:
+          condition:
+            for:
+              time: 250ms
+              condition:     
+                - display.is_displaying_page:
+                    id: tft_ha
+                    page_id: page3
+          then:       
+            - homeassistant.service:
+                service: number.set_value
+                data:
+                  value: "10"
+                data_template:
+                    entity_id: number.sonosf_bass                       
+
+
+
+
+##############
+  - platform: xpt2046
+    xpt2046_id: touchscreen
+    id: treb1
+    x_min: 137
+    x_max: 300
+    y_min: 254
+    y_max: 295
+    on_press:
+      - if:
+          condition:
+            for:
+              time: 250ms
+              condition:     
+                - display.is_displaying_page:
+                    id: tft_ha
+                    page_id: page3
+          then:       
+            - homeassistant.service:
+                service: number.set_value
+                data:
+                  value: "-10"
+                data_template:
+                    entity_id: number.sonosf_treble
+  - platform: xpt2046
+    xpt2046_id: touchscreen
+    id: treb2
+    x_min: 137
+    x_max: 300
+    y_min: 216
+    y_max: 254
+    on_press:
+      - if:
+          condition:
+            for:
+              time: 250ms
+              condition:     
+                - display.is_displaying_page:
+                    id: tft_ha
+                    page_id: page3
+          then:       
+            - homeassistant.service:
+                service: number.set_value
+                data:
+                  value: "-7"
+                data_template:
+                    entity_id: number.sonosf_treble    
+  - platform: xpt2046
+    xpt2046_id: touchscreen
+    id: treb3
+    x_min: 137
+    x_max: 300
+    y_min: 178
+    y_max: 216
+    on_press:
+      - if:
+          condition:
+            for:
+              time: 250ms
+              condition:     
+                - display.is_displaying_page:
+                    id: tft_ha
+                    page_id: page3
+          then:       
+            - homeassistant.service:
+                service: number.set_value
+                data:
+                  value: "-4"
+                data_template:
+                    entity_id: number.sonosf_treble   
+  - platform: xpt2046
+    xpt2046_id: touchscreen
+    id: treb4
+    x_min: 137
+    x_max: 300
+    y_min: 140
+    y_max: 178
+    on_press:
+      - if:
+          condition:
+            for:
+              time: 250ms
+              condition:     
+                - display.is_displaying_page:
+                    id: tft_ha
+                    page_id: page3
+          then:       
+            - homeassistant.service:
+                service: number.set_value
+                data:
+                  value: "1"
+                data_template:
+                    entity_id: number.sonosf_treble
+  - platform: xpt2046
+    xpt2046_id: touchscreen
+    id: treb5
+    x_min: 137
+    x_max: 300
+    y_min: 102
+    y_max: 140
+    on_press:
+      - if:
+          condition:
+            for:
+              time: 250ms
+              condition:     
+                - display.is_displaying_page:
+                    id: tft_ha
+                    page_id: page3
+          then:       
+            - homeassistant.service:
+                service: number.set_value
+                data:
+                  value: "4"
+                data_template:
+                    entity_id: number.sonosf_treble 
+  - platform: xpt2046
+    xpt2046_id: touchscreen
+    id: treb6
+    x_min: 137
+    x_max: 300
+    y_min: 64
+    y_max: 102
+    on_press:
+      - if:
+          condition:
+            for:
+              time: 250ms
+              condition:     
+                - display.is_displaying_page:
+                    id: tft_ha
+                    page_id: page3
+          then:       
+            - homeassistant.service:
+                service: number.set_value
+                data:
+                  value: "7"
+                data_template:
+                    entity_id: number.sonosf_treble   
+  - platform: xpt2046
+    xpt2046_id: touchscreen
+    id: treb7
+    x_min: 137
+    x_max: 300
+    y_min: 26
+    y_max: 64
+    on_press:
+      - if:
+          condition:
+            for:
+              time: 250ms
+              condition:     
+                - display.is_displaying_page:
+                    id: tft_ha
+                    page_id: page3
+          then:       
+            - homeassistant.service:
+                service: number.set_value
+                data:
+                  value: "10"
+                data_template:
+                    entity_id: number.sonosf_treble    
+
+
+
+
+text_sensor:
+  - platform: homeassistant
+    id: mysensor1
+    entity_id: $media_player
+  - platform: homeassistant
+    id: mysensor3
+    entity_id: $media_player
+    attribute: media_title
+  - platform: homeassistant
+    id: mysensor4
+    entity_id: $media_player
+    attribute: media_artist  
+
+interval:
+  - interval: 2s
+    then:
+      - switch.toggle: goodnight   
+    
+switch:
+  - platform: template
+    optimistic: true
+    id: goodnight
+    on_turn_on:
+        then:
+          - wait_until:
+              condition:
+                for:
+                   time: 5s
+                   condition:     
+                      - binary_sensor.is_on: pagetimeout1
+          - display.page.show: page3
+        
